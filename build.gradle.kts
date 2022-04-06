@@ -1,10 +1,11 @@
 plugins {
     java
     `maven-publish`
+    signing
 }
 
 group = "com.jiangyc"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
@@ -36,19 +37,54 @@ tasks.withType<JavaCompile> {
 }
 
 publishing {
+    val sonatypeUsername = project.findProperty("sonatype.username") as String? ?: System.getenv("USERNAME")
+    val sonatypePassword = project.findProperty("sonatype.password") as String? ?: System.getenv("PASSWORD")
+
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/JSpringYC/reptile-core")
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
             credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                username = sonatypeUsername
+                password = sonatypePassword
             }
         }
     }
     publications {
-        register<MavenPublication>("gpr") {
+        create<MavenPublication>("sonatype") {
+//            groupId = "com.jiangyc"
+//            artifactId = "reptile-core"
+//            version = "1.0.1"
             from(components["java"])
+
+            pom {
+                name.set("Reptile Core")
+                description.set("HTML网页解析及特定内容获取工具。")
+                url.set("https://www.jiangyc.com/reptile-core")
+                licenses {
+                    license {
+                        name.set("GNU GENERAL PUBLIC LICENSE, Version 3")
+                        url.set("https://www.gnu.org/licenses/gpl-3.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("jiangyc")
+                        name.set("佳木流泉")
+                        email.set("JSpringYC@gmail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/JSpringYC/reptile-core.git")
+                    developerConnection.set("scm:git:git@github.com:JSpringYC/reptile-core.git")
+                    url.set("https://www.jiangyc.com/reptile-core")
+                }
+            }
         }
     }
+}
+
+signing {
+    useGpgCmd()
+    sign(configurations.archives.get())
+    sign(publishing.publications["sonatype"])
 }
