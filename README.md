@@ -2,7 +2,25 @@
 
 HTML网页解析及特定内容获取工具。
 
-## 用法
+## 使用
+
+### Gradle
+
+```kotlin
+implementation("com.jiangyc:reptile-core:1.0.0")
+```
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>com.jiangyc</groupId>
+    <artifactId>reptile-core</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+## 示例
 
 ```java
 public class ReptileTest {
