@@ -91,14 +91,14 @@ public class Reptile {
     /**
      * 在给定的文档对象中用给定的css选择器检索，如果检索到元素的话，用给定的处理方法处理首个元素。
      *
-     * @param doc 文档对象
+     * @param ele 文档元素
      * @param cssQuery css选择器
      * @param processor 对选中的首个{@code org.jsoup.nodes.Element}对象的处理方法
      * @param <E> 处理检索到的元素后的生成返回值
      * @return 处理检索到的元素后的生成返回值，如未检索到元素，为null
      */
-    public <E> E selectOne(Document doc, String cssQuery, Function<Element, E> processor) {
-        Elements elements = doc.select(cssQuery);
+    public <E> E selectOne(Element ele, String cssQuery, Function<Element, E> processor) {
+        Elements elements = ele.select(cssQuery);
 
         if (!elements.isEmpty()) {
             return processor.apply(elements.first());
@@ -110,12 +110,12 @@ public class Reptile {
     /**
      * 在给定的文档对象中用给定的css选择器检索，如果检索到元素的话，用给定的处理方法处理每个元素。
      *
-     * @param doc 文档对象
+     * @param ele 文档对象
      * @param cssQuery css选择器
      * @param processor 对选中的每个{@code org.jsoup.nodes.Element}对象的处理方法
      */
-    public void selectAll(Document doc, String cssQuery, Function<Element, Void> processor) {
-        Elements elements = doc.select(cssQuery);
+    public void selectAll(Element ele, String cssQuery, Function<Element, Void> processor) {
+        Elements elements = ele.select(cssQuery);
 
         if (!elements.isEmpty()) {
             for (Element element : elements) {
