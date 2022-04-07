@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.jiangyc"
-version = "1.0.2"
+version = "1.1.0"
 
 repositories {
     mavenCentral()
@@ -49,9 +49,6 @@ publishing {
     }
     publications {
         create<MavenPublication>("sonatype") {
-//            groupId = "com.jiangyc"
-//            artifactId = "reptile-core"
-//            version = "1.0.1"
             from(components["java"])
 
             pom {
