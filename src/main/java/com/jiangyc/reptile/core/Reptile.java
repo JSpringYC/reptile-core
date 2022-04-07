@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -20,27 +22,22 @@ import java.util.function.Function;
  * <pre>
  * {@code
  * Reptile reptile = new Reptile();
- * List<Map<String, String>> classifies = reptile.resolve("https://www.qidian.com", (doc) -> {
- *     List<Map<String, String>> classifyList = new ArrayList<>();
+ * new Reptile().resolve("https://www.qidian.com", (doc) ->
+ *                 reptile.selectAll(doc, "#classify-list>dl>dd>a", (ele) -> {
+ *                     Map<String, String> classifyMap = new HashMap<>();
  *
- *     reptile.selectAll(doc, "#classify-list>dl>dd>a", (ele) -> {
- *         Map<String, String> classifyMap = new HashMap<>();
+ *                     String id = reptile.attr(ele, "href", (it) ->
+ *                             it.replaceAll("\\\\", "").replaceAll("/", ""));
+ *                     classifyMap.put("id", id);
  *
- *         String id = reptile.attr(ele, "href", (it) -> it.replaceAll("\\\\", "").replaceAll("/", ""));
- *         classifyMap.put("id", id);
+ *                     String name = reptile.selectOne(ele, "cite>span>i", Element::text);
+ *                     classifyMap.put("name", name);
  *
- *         String name = reptile.selectOne(ele, "cite>span>i", Element::text);
- *         classifyMap.put("name", name);
+ *                     String count = reptile.selectOne(ele, "cite>span>b", Element::text);
+ *                     classifyMap.put("count", count);
  *
- *         String count = reptile.selectOne(ele, "cite>span>b", Element::text);
- *         classifyMap.put("count", count);
- *
- *         classifyList.add(classifyMap);
- *         return null;
- *     });
- *
- *     return classifyList;
- * });
+ *                     return classifyMap;
+ *                 })).forEach(System.out::println);
  * }
  * </pre>
  */
@@ -104,15 +101,46 @@ public class Reptile {
      * @param ele 文档对象
      * @param cssQuery css选择器
      * @param processor 对选中的每个{@code org.jsoup.nodes.Element}对象的处理方法
+     * @param <E> {@code java.util.List}集合中的单个元素
      */
-    public void selectAll(Element ele, String cssQuery, Function<Element, Void> processor) {
+    public <E> List<E> selectAll(Element ele, String cssQuery, Function<Element, E> processor) {
         Elements elements = ele.select(cssQuery);
+        List<E> eList = new ArrayList<>();
 
         if (!elements.isEmpty()) {
             for (Element element : elements) {
-                processor.apply(element);
+                E e = processor.apply(element);
+
+                if (e != null) {
+                    eList.add(e);
+                }
             }
         }
+        return eList;
+    }
+
+    /**
+     * 在给定的文档获取元素的属性，并对属性的值进行一定的操作。
+     *
+     * @param ele 要操作的元素
+     * @param cssQuery 要操作的节点的css选择器。当该参数未指定时，将操作给定节点参数指定的元素
+     * @param attributeKey 要操作的元素的属性
+     * @param processor 元素的属性值的额外操作方法，如为{@code null}，则不进行额外的操作
+     * @return 元素的属性的值
+     */
+    public String attr(Element ele, String cssQuery, String attributeKey, Function<String, String> processor) {
+        String attributeValue;
+        if (cssQuery == null || cssQuery.isBlank()) {
+            attributeValue = ele.attr(attributeKey);
+        } else {
+            attributeValue = selectOne(ele, cssQuery, (it) -> it.attr(attributeKey));
+        }
+
+        if (attributeValue.isBlank()) {
+            return null;
+        }
+
+        return processor == null ? attributeValue : processor.apply(attributeValue);
     }
 
     /**
@@ -124,12 +152,30 @@ public class Reptile {
      * @return 元素的属性的值
      */
     public String attr(Element ele, String attributeKey, Function<String, String> processor) {
-        String attributeValue = ele.attr(attributeKey);
-        if (attributeKey.isBlank()) {
+        return attr(ele, null, attributeKey, processor);
+    }
+
+    /**
+     * 在给定的文档获取元素的文本字符串，并对该文本进行一定的操作。
+     *
+     * @param ele 要操作的元素
+     * @param cssQuery 要操作的节点的css选择器。当该参数未指定时，将操作给定节点参数指定的元素
+     * @param processor 元素的文本字符串的额外操作方法，如为{@code null}，则不进行额外的操作
+     * @return 元素的文本字符串
+     */
+    public String text(Element ele, String cssQuery, Function<String, String> processor) {
+        String text;
+        if (cssQuery == null || cssQuery.isBlank()) {
+            text = ele.text();
+        } else {
+            text = selectOne(ele, cssQuery, Element::text);
+        }
+
+        if (text.isBlank()) {
             return null;
         }
 
-        return processor == null ? attributeValue : processor.apply(attributeValue);
+        return processor == null ? text : processor.apply(text);
     }
 
     /**
@@ -140,12 +186,7 @@ public class Reptile {
      * @return 元素的文本字符串
      */
     public String text(Element ele, Function<String, String> processor) {
-        String text = ele.text();
-        if (text.isBlank()) {
-            return null;
-        }
-
-        return processor == null ? text : processor.apply(text);
+        return text(ele, null, processor);
     }
 
     /**
