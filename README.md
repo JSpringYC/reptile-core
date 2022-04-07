@@ -7,7 +7,7 @@ HTML网页解析及特定内容获取工具。
 ### Gradle
 
 ```kotlin
-implementation("com.jiangyc:reptile-core:1.1.1")
+implementation("com.jiangyc:reptile-core:1.2.0")
 ```
 
 ### Maven
@@ -16,47 +16,39 @@ implementation("com.jiangyc:reptile-core:1.1.1")
 <dependency>
     <groupId>com.jiangyc</groupId>
     <artifactId>reptile-core</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
 ## 示例
 
 ```java
+import javax.lang.model.element.Element;
+
 public class ReptileTest {
-    
+
     public static void main(String[] args) {
         Reptile reptile = new Reptile();
 
         // List<Map<String, String>> classifies = reptile.resolve("https://www.qidian.com", StandardCharsets.UTF_8, (doc) -> {
         List<Map<String, String>> classifies = reptile.resolve("https://www.qidian.com", (doc) -> {
-            Elements elements = doc.select("#classify-list>dl>dd>a");
-
             List<Map<String, String>> classifyList = new ArrayList<>();
 
-            for (Element ele : elements) {
+            reptile.selectAll(doc, "#classify-list>dl>dd>a", (ele) -> {
                 Map<String, String> classifyMap = new HashMap<>();
 
-                // id
-                String id = ele.attr("href");
-                if (!id.isBlank()) {
-                    id = id.replaceAll("\\\\", "");
-                    id = id.replaceAll("/", "");
-                }
+                String id = reptile.attr(ele, "href", (it) -> it.replaceAll("\\\\", "").replaceAll("/", ""));
                 classifyMap.put("id", id);
-                // name
-                Elements eleName = ele.select("cite>span>i");
-                if (!eleName.isEmpty()) {
-                    classifyMap.put("name", eleName.get(0).text());
-                }
-                // count
-                Elements eleCount = ele.select("cite>span>b");
-                if (!eleCount.isEmpty()) {
-                    classifyMap.put("count", eleCount.get(0).text());
-                }
+
+                String name = reptile.selectOne(ele, "cite>span>i", Element::text);
+                classifyMap.put("name", name);
+
+                String count = reptile.selectOne(ele, "cite>span>b", Element::text);
+                classifyMap.put("count", count);
 
                 classifyList.add(classifyMap);
-            }
+                return null;
+            });
 
             return classifyList;
         });

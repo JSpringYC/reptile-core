@@ -1,7 +1,6 @@
 package com.jiangyc.reptile.core;
 
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -18,33 +17,23 @@ public class ReptileTest {
         Reptile reptile = new Reptile();
 
         List<Map<String, String>> classifies = reptile.resolve("https://www.qidian.com", (doc) -> {
-            Elements elements = doc.select("#classify-list>dl>dd>a");
-
             List<Map<String, String>> classifyList = new ArrayList<>();
 
-            for (Element ele : elements) {
+            reptile.selectAll(doc, "#classify-list>dl>dd>a", (ele) -> {
                 Map<String, String> classifyMap = new HashMap<>();
 
-                // id
-                String id = ele.attr("href");
-                if (!id.isBlank()) {
-                    id = id.replaceAll("\\\\", "");
-                    id = id.replaceAll("/", "");
-                }
+                String id = reptile.attr(ele, "href", (it) -> it.replaceAll("\\\\", "").replaceAll("/", ""));
                 classifyMap.put("id", id);
-                // name
-                Elements eleName = ele.select("cite>span>i");
-                if (!eleName.isEmpty()) {
-                    classifyMap.put("name", eleName.get(0).text());
-                }
-                // count
-                Elements eleCount = ele.select("cite>span>b");
-                if (!eleCount.isEmpty()) {
-                    classifyMap.put("count", eleCount.get(0).text());
-                }
+
+                String name = reptile.selectOne(ele, "cite>span>i", Element::text);
+                classifyMap.put("name", name);
+
+                String count = reptile.selectOne(ele, "cite>span>b", Element::text);
+                classifyMap.put("count", count);
 
                 classifyList.add(classifyMap);
-            }
+                return null;
+            });
 
             return classifyList;
         });
@@ -57,33 +46,23 @@ public class ReptileTest {
         Reptile reptile = new Reptile();
 
         List<Map<String, String>> classifies = reptile.resolve("https://www.qidian.com", StandardCharsets.UTF_8, (doc) -> {
-            Elements elements = doc.select("#classify-list>dl>dd>a");
-
             List<Map<String, String>> classifyList = new ArrayList<>();
 
-            for (Element ele : elements) {
+            reptile.selectAll(doc, "#classify-list>dl>dd>a", (ele) -> {
                 Map<String, String> classifyMap = new HashMap<>();
 
-                // id
-                String id = ele.attr("href");
-                if (!id.isBlank()) {
-                    id = id.replaceAll("\\\\", "");
-                    id = id.replaceAll("/", "");
-                }
+                String id = reptile.attr(ele, "href", (it) -> it.replaceAll("\\\\", "").replaceAll("/", ""));
                 classifyMap.put("id", id);
-                // name
-                Elements eleName = ele.select("cite>span>i");
-                if (!eleName.isEmpty()) {
-                    classifyMap.put("name", eleName.get(0).text());
-                }
-                // count
-                Elements eleCount = ele.select("cite>span>b");
-                if (!eleCount.isEmpty()) {
-                    classifyMap.put("count", eleCount.get(0).text());
-                }
+
+                String name = reptile.selectOne(ele, "cite>span>i", Element::text);
+                classifyMap.put("name", name);
+
+                String count = reptile.selectOne(ele, "cite>span>b", Element::text);
+                classifyMap.put("count", count);
 
                 classifyList.add(classifyMap);
-            }
+                return null;
+            });
 
             return classifyList;
         });

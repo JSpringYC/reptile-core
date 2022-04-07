@@ -3,6 +3,7 @@ package com.jiangyc.reptile.core;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -20,33 +21,23 @@ import java.util.function.Function;
  * {@code
  * Reptile reptile = new Reptile();
  * List<Map<String, String>> classifies = reptile.resolve("https://www.qidian.com", (doc) -> {
- *     Elements elements = doc.select("#classify-list>dl>dd>a");
- *
  *     List<Map<String, String>> classifyList = new ArrayList<>();
  *
- *     for (Element ele : elements) {
+ *     reptile.selectAll(doc, "#classify-list>dl>dd>a", (ele) -> {
  *         Map<String, String> classifyMap = new HashMap<>();
  *
- *         // id
- *         String id = ele.attr("href");
- *         if (!id.isBlank()) {
- *             id = id.replaceAll("\\\\", "");
- *             id = id.replaceAll("/", "");
- *         }
+ *         String id = reptile.attr(ele, "href", (it) -> it.replaceAll("\\\\", "").replaceAll("/", ""));
  *         classifyMap.put("id", id);
- *         // name
- *         Elements eleName = ele.select("cite>span>i");
- *         if (!eleName.isEmpty()) {
- *             classifyMap.put("name", eleName.get(0).text());
- *         }
- *         // count
- *         Elements eleCount = ele.select("cite>span>b");
- *         if (!eleCount.isEmpty()) {
- *             classifyMap.put("count", eleCount.get(0).text());
- *         }
+ *
+ *         String name = reptile.selectOne(ele, "cite>span>i", Element::text);
+ *         classifyMap.put("name", name);
+ *
+ *         String count = reptile.selectOne(ele, "cite>span>b", Element::text);
+ *         classifyMap.put("count", count);
  *
  *         classifyList.add(classifyMap);
- *     }
+ *         return null;
+ *     });
  *
  *     return classifyList;
  * });
@@ -120,6 +111,56 @@ public class Reptile {
         if (!elements.isEmpty()) {
             for (Element element : elements) {
                 processor.apply(element);
+            }
+        }
+    }
+
+    /**
+     * 在给定的文档获取元素的属性，并对属性的值进行一定的操作。
+     *
+     * @param ele 要操作的元素
+     * @param attributeKey 要操作的元素的属性
+     * @param processor 元素的属性值的额外操作方法，如为{@code null}，则不进行额外的操作
+     * @return 元素的属性的值
+     */
+    public String attr(Element ele, String attributeKey, Function<String, String> processor) {
+        String attributeValue = ele.attr(attributeKey);
+        if (attributeKey.isBlank()) {
+            return null;
+        }
+
+        return processor == null ? attributeValue : processor.apply(attributeValue);
+    }
+
+    /**
+     * 在给定的文档获取元素的文本字符串，并对该文本进行一定的操作。
+     *
+     * @param ele 要操作的元素
+     * @param processor 元素的文本字符串的额外操作方法，如为{@code null}，则不进行额外的操作
+     * @return 元素的文本字符串
+     */
+    public String text(Element ele, Function<String, String> processor) {
+        String text = ele.text();
+        if (text.isBlank()) {
+            return null;
+        }
+
+        return processor == null ? text : processor.apply(text);
+    }
+
+    /**
+     * 从节点数中移除元素。当指定css选择器时，会从指定对象中检索，并移除检索到的元素。如果未指定css选择器时，将移除指定的元素。
+     *
+     * @param ele 要移除的元素或要移除的元素的父元素
+     * @param cssQueries 要移初的元素的css选择器。当该参数未指定时，将移除ele参数指定的元素
+     * @see Node#remove()
+     */
+    public void remove(Element ele, String... cssQueries) {
+        if (cssQueries == null || cssQueries.length == 0) {
+            ele.remove();
+        } else {
+            for (String cssQuery : cssQueries) {
+                ele.select(cssQuery).forEach(Node::remove);
             }
         }
     }
