@@ -102,6 +102,7 @@ public class Reptile {
      * @param cssQuery css选择器
      * @param processor 对选中的每个{@code org.jsoup.nodes.Element}对象的处理方法
      * @param <E> {@code java.util.List}集合中的单个元素
+     * @return {@code java.util.List}集合
      */
     public <E> List<E> selectAll(Element ele, String cssQuery, Function<Element, E> processor) {
         Elements elements = ele.select(cssQuery);
