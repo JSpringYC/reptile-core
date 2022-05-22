@@ -7,7 +7,7 @@ HTML网页解析及特定内容获取工具。
 ### Gradle
 
 ```kotlin
-implementation("com.jiangyc:reptile-core:1.3.0")
+implementation("com.jiangyc:reptile-core:1.3.1")
 ```
 
 ### Maven
@@ -16,7 +16,7 @@ implementation("com.jiangyc:reptile-core:1.3.0")
 <dependency>
     <groupId>com.jiangyc</groupId>
     <artifactId>reptile-core</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 

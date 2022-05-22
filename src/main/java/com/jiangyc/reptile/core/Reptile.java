@@ -206,4 +206,16 @@ public class Reptile {
             }
         }
     }
+
+    /**
+     * 从节点数中移除所有的子元素。
+     *
+     * @param ele 要移除的元素的父元素
+     * @see Node#remove()
+     */
+    public void clear(Element ele) {
+        if (ele != null) {
+            ele.children().forEach(Node::remove);
+        }
+    }
 }
